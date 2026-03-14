@@ -40,15 +40,21 @@ function mapTmdbMovieToMovie(tmdb: TmdbMovie): Movie {
  * @returns Promise with array of movies
  */
 
-async function fetchMovies(query: string): Promise<Movie[]> {
-  const response = await axios.get<TmdbSearchResponse>(
+async function fetchMovies(
+  query: string,
+  page: number,
+): Promise<TmdbSearchResponse & { results: Movie[] }> {
+  const { data } = await axios.get<TmdbSearchResponse>(
     `${TMDB_BASE_URL}/search/movie`,
     {
-      params: { query },
+      params: { query: query, page: page },
       headers: { Authorization: `Bearer ${token}` },
     },
   );
-  return response.data.results.map(mapTmdbMovieToMovie);
+  return {
+    ...data,
+    results: data.results.map(mapTmdbMovieToMovie),
+  };
 }
 
-export { fetchMovies };
+export default { fetchMovies };
