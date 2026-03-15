@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import ReactPaginate from "react-paginate";
+import { Toaster, toast } from "react-hot-toast";
 
 import css from "./App.module.css";
 
@@ -25,6 +26,11 @@ function App() {
     placeholderData: keepPreviousData,
   });
 
+  // Toast якщо фільми не знайдені
+  if (isSuccess && data && data.results.length === 0) {
+    toast.error("Фільми не знайдені за вашим запитом.");
+  }
+
   const handleSearchBar = (query: string) => {
     setSearch(query);
     setPage(1);
@@ -45,7 +51,8 @@ function App() {
 
   return (
     <>
-      <SearchBar onSearch={handleSearchBar} />
+      <Toaster position="top-right" />
+      <SearchBar onSubmit={handleSearchBar} />
       {isLoading && <Loader />}
       {isError && !isLoading && <ErrorMessage />}
       {isSuccess && data && data.results.length > 0 && (
@@ -64,7 +71,9 @@ function App() {
           previousLabel="←"
         />
       )}
-      <MovieModal movie={selectedMovie} onClose={handleModalClose} />
+      {selectedMovie && (
+        <MovieModal movie={selectedMovie} onClose={handleModalClose} />
+      )}
     </>
   );
 }

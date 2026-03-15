@@ -14,7 +14,7 @@ interface TmdbMovie {
 
 export interface TmdbSearchResponse {
   page: number;
-  results: TmdbMovie[];
+  results: Movie[];
   total_pages: number;
   total_results: number;
 }
@@ -37,23 +37,26 @@ function mapTmdbMovieToMovie(tmdb: TmdbMovie): Movie {
 /**
  * Fetches movies from TMDB API by search query
  * @param query - Search term for movies
- * @returns Promise with array of movies
+ * @returns Promise with object containing movies and pagination info
  */
-
 async function fetchMovies(
   query: string,
   page: number,
-): Promise<TmdbSearchResponse & { results: Movie[] }> {
-  const { data } = await axios.get<TmdbSearchResponse>(
-    `${TMDB_BASE_URL}/search/movie`,
-    {
-      params: { query: query, page: page },
-      headers: { Authorization: `Bearer ${token}` },
-    },
-  );
+): Promise<TmdbSearchResponse> {
+  const { data } = await axios.get<{
+    page: number;
+    results: TmdbMovie[];
+    total_pages: number;
+    total_results: number;
+  }>(`${TMDB_BASE_URL}/search/movie`, {
+    params: { query: query, page: page },
+    headers: { Authorization: `Bearer ${token}` },
+  });
   return {
-    ...data,
+    page: data.page,
     results: data.results.map(mapTmdbMovieToMovie),
+    total_pages: data.total_pages,
+    total_results: data.total_results,
   };
 }
 
